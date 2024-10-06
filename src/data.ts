@@ -83,7 +83,7 @@ function prefetchWaypoints() {
       pl_rade_reflink: string;
       pl_orbeccen: string;
       pl_orbeccen_reflink: string;
-    }>(window.location.origin + "/public/waypoints.csv", {
+    }>(window.location.origin + "/waypoints.csv", {
       download: true,
       header: true,
       error(e) {
