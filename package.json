@@ -12,9 +12,12 @@
   "dependencies": {
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.9",
+    "clsx": "^2.1.1",
     "framer-motion": "^11.11.1",
     "framer-motion-3d": "^11.11.1",
+    "lodash-es": "^4.17.21",
     "lucide-react": "^0.447.0",
+    "papaparse": "^5.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router": "^6.26.2",
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
+    "@types/papaparse": "^5.3.14",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",

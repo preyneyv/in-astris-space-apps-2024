@@ -1,12 +1,15 @@
 import { Grid, OrbitControls, Stats } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { StrictMode, useEffect, useState } from "react";
+import clsx from "clsx";
+import { AnimatePresence } from "framer-motion";
+import { OrbitIcon } from "lucide-react";
+import { ReactNode, StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import * as THREE from "three";
 
-import { AnimatePresence } from "framer-motion";
+import { prefetchData } from "./data";
 import { dom } from "./dom-tunnel";
 import "./index.css";
 import PlanetInfographic from "./planet-detail/infographic";
@@ -76,7 +79,7 @@ function Root() {
   const location = useLocation();
   return (
     <div id="container">
-      <Canvas scene={{ background: BLACK }}>
+      <Canvas scene={{ background: BLACK }} style={{ touchAction: "none" }}>
         <AnimatePresence>
           <Routes location={location} key={location.pathname}>
             <Route index element={<Navigate to="/planets/Earth/info" />} />
@@ -95,11 +98,39 @@ function Root() {
   );
 }
 
+function PrefetchGuard({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    prefetchData().then(() => setReady(true));
+  }, []);
+  return (
+    <>
+      <div
+        className={clsx(
+          "text-white grid place-content-center w-full h-full fixed bg-black z-50 transition-all",
+          ready && "opacity-0 scale-110 pointer-events-none",
+        )}
+      >
+        <article className="flex gap-4 place-items-center text-xl">
+          <div className="flex justify-center">
+            <div className="animate-spin ease-linear w-fit h-fit">
+              <OrbitIcon className="scale-x-[-1]" />
+            </div>
+          </div>
+          <p>Loading...</p>
+        </article>
+      </div>
+      {ready && children}
+    </>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <Root />
-    </BrowserRouter>
-    {/* <RouterProvider router={router} /> */}
+    <PrefetchGuard>
+      <BrowserRouter>
+        <Root />
+      </BrowserRouter>
+    </PrefetchGuard>
   </StrictMode>,
 );

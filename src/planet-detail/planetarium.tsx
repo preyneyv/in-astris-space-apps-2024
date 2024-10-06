@@ -7,9 +7,11 @@ import { useNavigate } from "react-router";
 import * as THREE from "three";
 
 import StarField from "../components/star-field";
+import WaypointField from "../components/waypoint-field";
 import { dom } from "../dom-tunnel";
 
 const STAR_PROJ_DIST = 10;
+const WAYPOINTS_PROJ_DIST = 9;
 const GUIDE_DIST = STAR_PROJ_DIST + 1;
 
 // function useTouchRotation(root: HTMLElement) {
@@ -159,7 +161,8 @@ export default function Planetarium() {
           azimuth={[-Infinity, Infinity]}
           cursor={false}
         >
-          <StarField n={5000} d={STAR_PROJ_DIST} />
+          <StarField n={1000000} d={STAR_PROJ_DIST} />
+          <WaypointField n={5000} d={WAYPOINTS_PROJ_DIST} />
           <ReferenceGuides />
         </PresentationControls>
       </motion.group>

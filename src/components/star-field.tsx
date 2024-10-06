@@ -36,14 +36,15 @@ export default function StarField({ n, d }: { n: number; d: number }) {
         />
       </bufferGeometry>
       <motion.pointsMaterial
-        size={0.01}
+        size={1}
         color={0xffffff}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { duration: 1.5, delay: 1 } }}
+        animate={{ opacity: 0.5, transition: { duration: 1.5, delay: 1 } }}
         exit={{
           opacity: 0,
           transition: { duration: 1.5, ease: "easeOut" },
         }}
+        sizeAttenuation={false}
         transparent
       />
     </points>
