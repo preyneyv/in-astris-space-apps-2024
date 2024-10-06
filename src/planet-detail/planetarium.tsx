@@ -3,11 +3,11 @@ import { useThree } from "@react-three/fiber";
 import { animate, useIsPresent } from "framer-motion";
 import { motion } from "framer-motion-3d";
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import * as THREE from "three";
 
-import StarField from "../components/star-field";
 import WaypointField from "../components/waypoint-field";
+import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
 
 const STAR_PROJ_DIST = 10;
@@ -104,13 +104,15 @@ const GUIDE_DIST = STAR_PROJ_DIST + 1;
 // }
 
 export default function Planetarium() {
-  // const { id } = useParams();
   const navigate = useNavigate();
   const camera = useThree(({ camera }) => camera as THREE.PerspectiveCamera);
 
   const isPresent = useIsPresent();
-  const { width, height } = useThree((state) => state.viewport);
-  console.log(width, height);
+  // const { width, height } = useThree((state) => state.viewport);
+
+  const { id } = useParams();
+  const planet = useMemo(() => getPlanetBySlug(id!), [id]);
+  if (!planet) return null;
   return (
     <>
       {isPresent && (
@@ -161,8 +163,8 @@ export default function Planetarium() {
           azimuth={[-Infinity, Infinity]}
           cursor={false}
         >
-          <StarField n={1000000} d={STAR_PROJ_DIST} />
-          <WaypointField n={5000} d={WAYPOINTS_PROJ_DIST} />
+          {/* <StarField n={1000000} d={STAR_PROJ_DIST} /> */}
+          <WaypointField planet={planet} r={WAYPOINTS_PROJ_DIST} />
           <ReferenceGuides />
         </PresentationControls>
       </motion.group>

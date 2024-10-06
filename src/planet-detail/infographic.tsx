@@ -13,34 +13,35 @@ import { useParams } from "react-router";
 import StarField from "../components/star-field";
 
 import { Link } from "react-router-dom";
+import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
 
-function usePlanetDetail(id: string) {
-  return useMemo(
-    () => ({
-      data: {
-        name: id,
-        discoveryYear: 2020,
-        discoveryMethod: "Radial Velocity",
-        discoveryFacility: "Thueringer Landessternwarte Tautenburg",
-        link: "https://google.com",
-        planetRadiusRelEarth: 21.59, // rel earth
-        massRelEarth: 3932, // rel earth, mass or mass sin i
-        massProvenance: "mass",
-        distanceFromEarth: 12.2341, // pc
-        orbitalPeriod: 4.2889731, // days
-        orbitalEccentricity: 0, //
-        orbitalSemiMajorRadius: 0.0656, // au
-        hostSystem: {
-          name: "Gliese 12",
-          numStars: 1,
-          numPlanets: 1,
-        },
-      },
-    }),
-    [id],
-  );
-}
+// function usePlanetDetail(id: string) {
+// return usememo(
+//   () => ({
+//     data: {
+//       name: id,
+//       discoveryyear: 2020,
+//       discoverymethod: "radial velocity",
+//       discoveryfacility: "thueringer landessternwarte tautenburg",
+//       link: "https://google.com",
+//       planetradiusrelearth: 21.59, // rel earth
+//       massrelearth: 3932, // rel earth, mass or mass sin i
+//       massprovenance: "mass",
+//       distancefromearth: 12.2341, // pc
+//       orbitalperiod: 4.2889731, // days
+//       orbitaleccentricity: 0, //
+//       orbitalsemimajorradius: 0.0656, // au
+//       hostsystem: {
+//         name: "gliese 12",
+//         numstars: 1,
+//         numplanets: 1,
+//       },
+//     },
+//   }),
+//   [id],
+// );
+// }
 
 // function useHostSystemDetail(id: string) {
 //   return useMemo(
@@ -144,9 +145,13 @@ function ActionButton({
 
 export default function PlanetInfographic() {
   const { id } = useParams();
-  const { data: planet } = usePlanetDetail(id!);
-
+  // const { data: planet } = usePlanetDetail(id!);
   const isVisible = useIsPresent();
+  const planet = useMemo(() => getPlanetBySlug(id!), [id]);
+
+  if (!planet) {
+    return "lol whoops";
+  }
 
   return (
     <>
@@ -161,6 +166,7 @@ export default function PlanetInfographic() {
             initial={{ opacity: 0 }}
             animate={{ opacity: isVisible ? 1 : 0 }}
             transition={{ duration: 1, delay: isVisible ? 2.5 : 0 }}
+            style={{ pointerEvents: isVisible ? "all" : "none" }}
           >
             <InfographicCard label="Name">
               <h1 className="text-7xl font-bold">{planet.name}</h1>
@@ -175,12 +181,17 @@ export default function PlanetInfographic() {
             </InfographicCard>
             <InfographicCard label="Discovery">
               <div className="mb-4">
-                This exoplanet was discovered in{" "}
-                <span>{planet.discoveryYear}</span> by{" "}
-                <span>{planet.discoveryFacility}</span> using{" "}
-                <span>{planet.discoveryMethod}</span>.
+                This exoplanet was discovered
+                {planet.discoveryYear && <> in {planet.discoveryYear}</>}
+                {planet.discoveryFacility && (
+                  <> by {planet.discoveryFacility}</>
+                )}
+                {planet.discoveryMethod && (
+                  <> using the {planet.discoveryMethod} method</>
+                )}
+                .
               </div>
-              <a href={planet.link} target="_blank" rel="noreferrer">
+              <a href={""} target="_blank" rel="noreferrer">
                 <ActionButton icon={<NotebookTextIcon />}>
                   Read The Paper
                 </ActionButton>
@@ -189,36 +200,44 @@ export default function PlanetInfographic() {
             <InfographicCard label="Metrics">
               <div className="flex gap-6 flex-wrap">
                 <div className="flex gap-6">
-                  <InfographicFigure
-                    label="Radius"
-                    icon={<DraftingCompassIcon />}
-                    subtext="× Earth's"
-                  >
-                    {formatter.format(planet.planetRadiusRelEarth)}
-                  </InfographicFigure>
-                  <InfographicFigure
-                    label="Mass"
-                    icon={<ScaleIcon />}
-                    subtext="× Earth's"
-                  >
-                    {formatter.format(planet.massRelEarth)}
-                  </InfographicFigure>
+                  {planet.radiusRelEarth !== undefined && (
+                    <InfographicFigure
+                      label="Radius"
+                      icon={<DraftingCompassIcon />}
+                      subtext="× Earth's"
+                    >
+                      {formatter.format(planet.radiusRelEarth)}
+                    </InfographicFigure>
+                  )}
+                  {planet.massRelEarth !== undefined && (
+                    <InfographicFigure
+                      label="Mass"
+                      icon={<ScaleIcon />}
+                      subtext="× Earth's"
+                    >
+                      {formatter.format(planet.massRelEarth)}
+                    </InfographicFigure>
+                  )}
                 </div>
                 <div className="flex gap-6">
-                  <InfographicFigure
-                    label="Distance"
-                    icon={<RouteIcon />}
-                    subtext="parsecs"
-                  >
-                    {formatter.format(planet.distanceFromEarth)}
-                  </InfographicFigure>
-                  <InfographicFigure
-                    label="Orbital Period"
-                    icon={<OrbitIcon />}
-                    subtext="Earth days"
-                  >
-                    {formatter.format(planet.orbitalPeriod)}
-                  </InfographicFigure>
+                  {planet.distance !== undefined && (
+                    <InfographicFigure
+                      label="Distance"
+                      icon={<RouteIcon />}
+                      subtext="parsecs"
+                    >
+                      {formatter.format(planet.distance)}
+                    </InfographicFigure>
+                  )}
+                  {planet.orbitalPeriod !== undefined && (
+                    <InfographicFigure
+                      label="Orbital Period"
+                      icon={<OrbitIcon />}
+                      subtext="Earth days"
+                    >
+                      {formatter.format(planet.orbitalPeriod)}
+                    </InfographicFigure>
+                  )}
                 </div>
               </div>
             </InfographicCard>
@@ -252,7 +271,6 @@ export default function PlanetInfographic() {
                 ease: "easeOut",
               },
             },
-            // exit: { rotateY: 1, transition: { duration:  } },
           }}
           initial="initial"
           animate="enter"

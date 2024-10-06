@@ -82,7 +82,10 @@ function Root() {
       <Canvas scene={{ background: BLACK }} style={{ touchAction: "none" }}>
         <AnimatePresence>
           <Routes location={location} key={location.pathname}>
-            <Route index element={<Navigate to="/planets/Earth/info" />} />
+            <Route
+              index
+              element={<Navigate to="/planets/kepler-276-c/info" />}
+            />
             <Route
               path="/planets/:id"
               element={<Planetarium key="planetarium" />}
