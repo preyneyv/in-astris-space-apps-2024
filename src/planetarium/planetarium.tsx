@@ -1,7 +1,6 @@
 import { Line, OrbitControls } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
-const starCount = 5000;
 
 function raDecToCart(ra: number, dec: number, d: number) {
   const cos_ra = Math.cos(ra);
@@ -13,7 +12,7 @@ function raDecToCart(ra: number, dec: number, d: number) {
 
 function makeStars(n = 5000, d = 10) {
   const positions = new Float32Array(n * 3);
-  for (let i = 0; i < starCount; i++) {
+  for (let i = 0; i < n; i++) {
     const i3 = i * 3;
 
     const ra = Math.random() * Math.PI * 2;
@@ -29,7 +28,7 @@ const STAR_PROJ_DIST = 5;
 const GUIDE_DIST = STAR_PROJ_DIST + 1;
 
 export default function Planetarium() {
-  const starCount = 5000;
+  const starCount = 50000;
   const starPositions = useMemo(
     () => makeStars(starCount, STAR_PROJ_DIST),
     [starCount],
@@ -45,7 +44,7 @@ export default function Planetarium() {
             array={starPositions}
           />
         </bufferGeometry>
-        <pointsMaterial size={0.04} color={0xffffff} />
+        <pointsMaterial size={0.01} color={0xffffff} />
       </points>
       <ReferenceGuides />
       {/* <FPOrbitControls /> */}
