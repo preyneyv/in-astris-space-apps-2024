@@ -48,3 +48,8 @@ export default tseslint.config({
   },
 })
 ```
+
+-- Generating ts code to deserialize protobuf
+```
+npx protoc --ts_out . --proto_path . gaia_star_data.proto
+```

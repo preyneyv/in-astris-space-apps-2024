@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { StarCollection, Star } from "./protobuf/gaia_star_data_pb";
+import { Star, StarCollection } from "./protobuf/gaia_star_data";
 
 let status = "ready";
 
@@ -188,59 +188,25 @@ class DynamicFloat32Array {
 const starCoordinates = new DynamicFloat32Array();
 const starColorMeta = new DynamicFloat32Array();
 
-// function prefetchStars() {
-//   return new Promise<void>((res, rej) => {
-//     Papa.parse<{
-//       source_id: string;
-//       x: string;
-//       y: string;
-//       z: string;
-//       ra: string;
-//       dec: string;
-//       distance_parsecs: string;
-//       absolute_magnitude: string;
-//       wavelength: string;
-//       phot_g_mean_mag: string;
-//     }>(window.location.origin + "/stars.csv", {
-//       download: true,
-//       header: true,
-//       error(e) {
-//         if (e) rej(e);
-//       },
-//       step(row) {
-//         const data = row.data;
-//         if (!data.source_id?.length) return;
-//         starCoordinates.push(+data.x, +data.y, +data.z);
-//         // starCoordinates.push(+data.ra, +data.dec, +data.distance_parsecs);
-//         starColorMeta.push(+data.phot_g_mean_mag);
-//         // starColorMeta.push(+data.absolute_magnitude, +data.wavelength);
-//       },
-//       complete() {
-//         res();
-//       },
-//     });
-//   });
-// }
-
 function prefetchStars() {
   return new Promise<void>((res, rej) => {
-    fetch(window.location.origin + "./173636_stars.protobuf")
+    fetch(window.location.origin + "/883269_stars.protobuf")
       .then((response) => response.arrayBuffer())
       .then((buffer) => {
         // deserialize the protubuf binary data
-        const starCollection = StarCollection.deserializeBinary(
+        const starCollection = StarCollection.fromBinary(
           new Uint8Array(buffer),
         );
 
         // loop through each start in the collection
-        const starsList = starCollection.getStarsList();
-        starsList.forEach((star: Star) => {
-          if (star.getSourceId()) {
-            starCoordinates.push(star.getX(), star.getY(), star.getZ());
-
-            starColorMeta.push(star.getPhotGMeanMag());
+        starCollection.stars.forEach((star: Star) => {
+          if (star.sourceId) {
+            starCoordinates.push(star.x, star.y, star.z);
+            starColorMeta.push(star.photGMeanMag);
           }
         });
+
+        // console.log(starColorMeta.size);
 
         res();
       })
