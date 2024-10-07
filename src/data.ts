@@ -80,6 +80,10 @@ function prefetchWaypoints() {
     y: 0,
     z: 0,
     hostSystem: solarSystem,
+    massRelEarth: 1,
+    radiusRelEarth: 1,
+    orbitalPeriod: 365.26,
+    distance: 0,
   };
   solarSystem.planets.push(earth);
   hostSystems[solarSystem.slug] = solarSystem;

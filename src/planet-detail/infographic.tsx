@@ -99,6 +99,7 @@ export default function PlanetInfographic() {
   if (!planet) {
     return "lol whoops";
   }
+  const isEarth = planet.slug === "earth";
 
   return (
     <>
@@ -129,22 +130,28 @@ export default function PlanetInfographic() {
               </Link>
             </InfographicCard>
             <InfographicCard label="Discovery">
-              <div className="mb-4">
-                This exoplanet was discovered
-                {planet.discoveryYear && <> in {planet.discoveryYear}</>}
-                {planet.discoveryFacility && (
-                  <> by {planet.discoveryFacility}</>
-                )}
-                {planet.discoveryMethod && (
-                  <> using the {planet.discoveryMethod} method</>
-                )}
-                .
-              </div>
-              <a href={""} target="_blank" rel="noreferrer">
-                <ActionButton icon={<NotebookTextIcon />}>
-                  Read The Paper
-                </ActionButton>
-              </a>
+              {isEarth ? (
+                "We've been here for a while..."
+              ) : (
+                <div className="mb-4">
+                  This exoplanet was discovered
+                  {planet.discoveryYear && <> in {planet.discoveryYear}</>}
+                  {planet.discoveryFacility && (
+                    <> by {planet.discoveryFacility}</>
+                  )}
+                  {planet.discoveryMethod && (
+                    <> using the {planet.discoveryMethod} method</>
+                  )}
+                  .
+                </div>
+              )}
+              {!isEarth && (
+                <a href={""} target="_blank" rel="noreferrer">
+                  <ActionButton icon={<NotebookTextIcon />}>
+                    Read The Paper
+                  </ActionButton>
+                </a>
+              )}
             </InfographicCard>
             <InfographicCard label="Metrics">
               <div className="flex gap-6 flex-wrap">
