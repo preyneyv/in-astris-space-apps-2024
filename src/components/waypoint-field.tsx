@@ -104,7 +104,7 @@ export function RandomWaypointField({ n, d }: { n: number; d: number }) {
 //   return [x * fac, y * fac, z * fac];
 // }
 
-const DEFAULT_COLOR = [0.1, 0.1, 0.1];
+const DEFAULT_COLOR = [0.5, 0.6, 1];
 const HOVER_COLOR = [0.1, 0.3, 0.9];
 export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
   const navigate = useNavigate();
@@ -123,7 +123,9 @@ export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
     const { coordinates, meta } = localizedWaypoints;
     const count = meta.length;
     const colors = new Float32Array(count * 3);
-    colors.fill(0.1);
+    for (let i = 0; i < count; i++) {
+      colors.set(DEFAULT_COLOR, i * 3);
+    }
     return { meta, coordinates, count, colors };
   }, [localizedWaypoints]);
 

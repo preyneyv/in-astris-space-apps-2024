@@ -102,8 +102,11 @@ export default function PlanetInfographic() {
       <dom.In>
         <div
           key={`planet-detail-${planet.slug}`}
-          className="fixed top-0 left-0 text-white h-screen w-full flex justify-end items-start overflow-y-auto"
-          style={{ pointerEvents: isVisible ? "all" : "none" }}
+          className="fixed top-0 left-0 text-white h-screen w-full flex justify-end items-start overflow-y-auto transition-all"
+          style={{
+            pointerEvents: isVisible ? "all" : "none",
+            background: isVisible ? "rgba(0,0,0,0.5)" : "transparent",
+          }}
         >
           <div
             className={clsx(

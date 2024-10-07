@@ -69,7 +69,7 @@ export default function Landing() {
             scale: 1,
           },
           enter: {
-            scale: 0.0015,
+            scale: 0.0005,
             transition: {
               duration: 10,
               ease: easing,

@@ -48,7 +48,7 @@ export default function SystemInfographic() {
       <dom.In>
         <motion.div
           key={`system-detail-${system.slug}`}
-          className="fixed top-0 left-0 text-white h-screen w-screen flex justify-center items-start overflow-y-auto"
+          className="fixed top-0 left-0 text-white h-screen w-screen flex justify-center items-start overflow-y-auto bg-black/50"
           variants={{
             initial: { opacity: 0 },
             visible: { opacity: 1, transition: { duration: 1.5, delay: 1 } },

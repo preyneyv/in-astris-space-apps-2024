@@ -279,7 +279,6 @@ function ReferenceGuides() {
     <>
       {guideRotations.map(([x, y, z, highlight], i) => (
         <Line
-          // layers={}
           depthTest={false}
           depthWrite={false}
           points={circlePts}

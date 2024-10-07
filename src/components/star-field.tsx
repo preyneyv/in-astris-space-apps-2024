@@ -158,9 +158,9 @@ export default function StarField({
           />
         </bufferGeometry>
         <motion.pointsMaterial
-          size={2}
+          size={1}
           transparent
-          // depthTest={false}
+          depthTest={false}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5, transition: { duration: 1.5, delay: 1 } }}
           exit={{

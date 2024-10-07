@@ -1,6 +1,7 @@
 import { FuseWorker } from "@iosio/fuse-worker";
 import lruMemoize from "lru-memoize";
 import Papa from "papaparse";
+import * as THREE from "three";
 import { Star, StarCollection } from "./protobuf/gaia_star_data";
 
 let status = "ready";
@@ -239,7 +240,7 @@ function prefetchStars() {
         starCollection.stars.forEach((star: Star) => {
           if (star.sourceId) {
             starCoordinates.push(star.x, star.y, star.z);
-            starColorMeta.push(star.photGMeanMag);
+            starColorMeta.push(star.absoluteMagnitude, star.hue);
           }
         });
 
@@ -310,6 +311,7 @@ export const getLocalizedStars = lruMemoize(
   const count = starCoordinates.size / 3;
   const coordinates = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
+  const c = new THREE.Color();
   for (let i = 0; i < count; i++) {
     const si = i * 3;
     coordinates[si] = starCoordinates.arr[si] - reference.x;
@@ -317,10 +319,22 @@ export const getLocalizedStars = lruMemoize(
     coordinates[si + 2] = starCoordinates.arr[si + 2] - reference.z;
 
     // TODO: move this into starfield
-    colors[si] =
-      colors[si + 1] =
-      colors[si + 2] =
-        1 / starColorMeta.arr[i] ** 1.2;
+
+    const intensity = Math.min(
+      1,
+      Math.max(0, 1 / starColorMeta.arr[i * 2] ** 2.512),
+    );
+    const hue = starColorMeta.arr[i * 2 + 1];
+    // if (i == 0) console.log(hue);
+    c.setHSL(hue / 360, 1, intensity);
+    // c.get
+    colors[si] = c.r;
+    colors[si + 1] = c.g;
+    colors[si + 2] = c.b;
+    // colors[si] =
+    //   colors[si + 1] =
+    //   colors[si + 2] =
+    //     Math.min(1, Math.max(0, 1 / starColorMeta.arr[i] ** 2.512));
   }
   return [count, coordinates, colors] as const;
 });
