@@ -157,10 +157,16 @@ export default function StarField({
             array={colors}
           />
         </bufferGeometry>
-        <pointsMaterial
+        <motion.pointsMaterial
           size={2}
           transparent
           // depthTest={false}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5, transition: { duration: 1.5, delay: 1 } }}
+          exit={{
+            opacity: 0,
+            transition: { duration: 1.5, ease: "easeOut" },
+          }}
           blending={THREE.AdditiveBlending}
           vertexColors
           sizeAttenuation={false}

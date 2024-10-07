@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { SearchIcon } from "lucide-react";
+import { HomeIcon, SearchIcon } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { getFuzzySearchResults, WaypointFuzzyResult } from "../data";
@@ -7,7 +7,7 @@ import { menu } from "../dom-tunnel";
 
 export function MenuButton({
   icon,
-  // label,
+  label,
   onActivate,
 }: {
   icon: ReactNode;
@@ -17,9 +17,12 @@ export function MenuButton({
   return (
     <button
       onClick={onActivate}
-      className="bg-blue-200/10 w-12 h-12 flex items-center justify-center rounded-xl text-white hover:bg-gradient-to-tr from-blue-700 to-blue-400 hover:scale-105 hover:text-white transition-all"
+      className="group relative bg-blue-200/10 w-12 h-12 flex items-center justify-center rounded-xl text-blue-200/90 hover:bg-gradient-to-tr from-blue-700 to-blue-400 hover:scale-105 hover:text-white transition-all"
     >
       {icon}
+      <span className="absolute whitespace-nowrap -right-2 translate-x-full opacity-0 group-hover:-right-4 group-hover:opacity-100 transition-all pointer-events-none">
+        {label}
+      </span>
     </button>
   );
 }
@@ -76,7 +79,6 @@ export function SearchComponent() {
     setShowSearch(false);
     setQuery("");
   }
-  console.log(showSearch);
 
   return (
     <>
@@ -147,8 +149,14 @@ export function SearchComponent() {
 }
 
 export function Menu() {
+  const navigate = useNavigate();
   return (
     <div className="top-2 left-2 fixed flex flex-col gap-2 z-10">
+      <MenuButton
+        icon={<HomeIcon />}
+        label="Home"
+        onActivate={() => navigate("/")}
+      />
       <SearchComponent />
       <menu.Out />
     </div>

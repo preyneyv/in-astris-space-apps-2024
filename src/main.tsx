@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { OrbitIcon } from "lucide-react";
 import { ReactNode, StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Navigate, Route, Routes, useLocation } from "react-router";
+import { Route, Routes, useLocation } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import * as THREE from "three";
 
@@ -13,6 +13,7 @@ import { Menu } from "./components/menu";
 import { prefetchData } from "./data";
 import { dom } from "./dom-tunnel";
 import "./index.css";
+import Landing from "./landing/landing";
 import PlanetInfographic from "./planet-detail/infographic";
 import Planetarium from "./planet-detail/planetarium";
 import SystemInfographic from "./system-detail/infographic";
@@ -88,7 +89,8 @@ function Root() {
       >
         <AnimatePresence>
           <Routes location={location} key={location.pathname}>
-            <Route index element={<Navigate to="/planets/earth/info" />} />
+            {/* <Route index element={<Navigate to="/planets/earth/info" />} /> */}
+            <Route index element={<Landing />} />
             <Route path="/systems/:id" element={<SystemInfographic />} />
             <Route
               path="/planets/:id"

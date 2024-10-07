@@ -17,6 +17,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.1",
     "framer-motion-3d": "^11.11.1",
+    "lru-memoize": "^1.1.0",
     "lucide-react": "^0.447.0",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",

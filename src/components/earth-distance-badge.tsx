@@ -11,7 +11,7 @@ export function PlanetBadge({ planet }: { planet: WaypointPlanet }) {
           {planet.name} <InfoIcon />
         </div>
       </Link>
-      {planet.distance && (
+      {!!planet.distance && (
         <div className="bg-neutral-800/80 px-2 py-1 rounded-lg">
           {formatter.format(planet.distance)} pc from Earth
         </div>

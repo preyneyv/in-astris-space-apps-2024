@@ -105,7 +105,7 @@ export function RandomWaypointField({ n, d }: { n: number; d: number }) {
 // }
 
 const DEFAULT_COLOR = [0.1, 0.1, 0.1];
-const HOVER_COLOR = [0.1, 0.9, 0.9];
+const HOVER_COLOR = [0.1, 0.3, 0.9];
 export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
   const navigate = useNavigate();
   const lastHovered = useRef(-1);
@@ -180,7 +180,7 @@ export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
             array={coordinates}
           />
         </bufferGeometry>
-        <pointsMaterial
+        <motion.pointsMaterial
           transparent
           depthTest={false}
           depthWrite={false}
@@ -188,8 +188,9 @@ export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
           blending={THREE.AdditiveBlending}
           vertexColors
           size={0.1}
-          // size={40}
-          // sizeAttenuation={false}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 1.5 } }}
+          exit={{ opacity: 0, transition: { duration: 1.5 } }}
         />
       </points>
       <dom.In>

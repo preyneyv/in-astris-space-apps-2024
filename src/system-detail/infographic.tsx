@@ -3,6 +3,7 @@ import { sortBy } from "lodash-es";
 import { ReactNode, useMemo } from "react";
 import { useParams } from "react-router";
 
+import { useIsPresent } from "framer-motion";
 import { Link } from "react-router-dom";
 import StarField from "../components/star-field";
 import { getHostSystemBySlug, WaypointPlanet } from "../data";
@@ -27,9 +28,11 @@ function PlanetMiniCard({ planet }: { planet: WaypointPlanet }) {
     <Link to={`/planets/${planet.slug}/info`}>
       <div className="bg-blue-200/20 p-6 rounded-3xl mt-2 mb-6 hover:bg-gradient-to-tr from-blue-700 to-blue-400 hover:scale-105 transition-all">
         <h3 className="text-4xl font-semibold">{planet.name}</h3>
-        <div className="text-lg">
-          Discovered in {planet.discoveryYear} by {planet.discoveryFacility}
-        </div>
+        {planet.discoveryYear && planet.discoveryYear && (
+          <div className="text-lg">
+            Discovered in {planet.discoveryYear} by {planet.discoveryFacility}
+          </div>
+        )}
       </div>
     </Link>
   );
@@ -37,14 +40,22 @@ function PlanetMiniCard({ planet }: { planet: WaypointPlanet }) {
 export default function SystemInfographic() {
   const { id } = useParams();
   const system = useMemo(() => getHostSystemBySlug(id!), [id]);
+  const isVisible = useIsPresent();
   if (!system) return "lol xd";
 
   return (
     <>
       <dom.In>
-        <div
+        <motion.div
           key={`system-detail-${system.slug}`}
           className="fixed top-0 left-0 text-white h-screen w-screen flex justify-center items-start overflow-y-auto"
+          variants={{
+            initial: { opacity: 0 },
+            visible: { opacity: 1, transition: { duration: 1.5, delay: 1 } },
+            hidden: { opacity: 0, transition: { duration: 1.5 } },
+          }}
+          initial="initial"
+          animate={isVisible ? "visible" : "hidden"}
         >
           <div className="py-16 w-full max-w-3xl">
             <InfographicCard label="Host System">
@@ -65,7 +76,7 @@ export default function SystemInfographic() {
                     {system.numPlanets === undefined
                       ? "an unknown number of"
                       : system.numPlanets}{" "}
-                    exoplanet{system.numPlanets !== 1 && "s"}.
+                    planet{system.numPlanets !== 1 && "s"}.
                   </>
                 )}
               </div>
@@ -76,7 +87,7 @@ export default function SystemInfographic() {
               ))}
             </InfographicCard>
           </div>
-        </div>
+        </motion.div>
       </dom.In>
       <motion.group
         position={[-15, 0, -50]}

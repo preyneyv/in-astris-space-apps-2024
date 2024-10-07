@@ -1,4 +1,5 @@
 import { FuseWorker } from "@iosio/fuse-worker";
+import lruMemoize from "lru-memoize";
 import Papa from "papaparse";
 import { Star, StarCollection } from "./protobuf/gaia_star_data";
 
@@ -272,7 +273,7 @@ export function getHostSystemBySlug(slug: string): WaypointHostSystem | null {
   return hostSystems[slug] ?? null;
 }
 
-export function getLocalizedWaypoints(planet: WaypointPlanet) {
+export const getLocalizedWaypoints = lruMemoize(3)((planet: WaypointPlanet) => {
   const meta = Object.values(hostSystems).filter(
     (k) => k.slug !== planet.hostSystem.slug,
   );
@@ -288,7 +289,7 @@ export function getLocalizedWaypoints(planet: WaypointPlanet) {
   }
 
   return { meta, coordinates };
-}
+});
 
 export function getFuzzySearchResults(search: string) {
   return new Promise<WaypointFuzzyResult[]>((res) => {
@@ -301,7 +302,11 @@ export function getFuzzySearchResults(search: string) {
 
 // Star-related data utilities
 
-export function getLocalizedStars(reference: CartesianCoords) {
+export const getLocalizedStars = lruMemoize(
+  3,
+  undefined,
+  true,
+)((reference: CartesianCoords) => {
   const count = starCoordinates.size / 3;
   const coordinates = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
@@ -318,4 +323,4 @@ export function getLocalizedStars(reference: CartesianCoords) {
         1 / starColorMeta.arr[i] ** 1.7;
   }
   return [count, coordinates, colors] as const;
-}
+});

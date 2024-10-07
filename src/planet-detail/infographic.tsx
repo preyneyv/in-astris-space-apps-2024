@@ -12,27 +12,10 @@ import { ReactNode, useMemo } from "react";
 import { useParams } from "react-router";
 import StarField from "../components/star-field";
 
+import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
-// const infographicsVariants: Variants = {
-//   hidden: {
-//     transform: `translateX(20px)`,
-//     opacity: 0,
-//   },
-//   visible: {
-//     transform: `none`,
-//     opacity: 1,
-//   },
-//   away: {
-//     transform: `translateY(-20px)`,
-//     opacity: 0,
-//     transition: {
-//       opacity: { duration: 0.5 },
-//       duration: 1.8,
-//     },
-//   },
-// };
 function InfographicCard({
   label,
   children,
@@ -41,14 +24,10 @@ function InfographicCard({
   children?: ReactNode;
 }) {
   return (
-    <motion.section
-      className="mb-12 text-2xl"
-      // variants={infographicsVariants}
-      // transition={{ duration: 1 }}
-    >
+    <section className="mb-12 text-2xl">
       <h6 className="detail-label">{label}</h6>
       {children}
-    </motion.section>
+    </section>
   );
 }
 
@@ -76,6 +55,20 @@ function InfographicFigure({
 
 const formatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
+function usePaperRefData(text?: string) {
+  return useMemo(() => {
+    if (!text) return { href: null, citation: null };
+    const el = document.createElement("div");
+    el.innerHTML = text;
+    const link = el.querySelector("a");
+    if (!link) return { href: null, citation: null };
+    const href = link.getAttribute("href") ?? null;
+    const citation = link.innerText.trim() || null;
+    el.remove();
+    return { href, citation };
+  }, [text]);
+}
+
 function ActionButton({
   children,
   icon,
@@ -84,7 +77,7 @@ function ActionButton({
   icon?: ReactNode;
 }) {
   return (
-    <button className="bg-blue-200/20 p-4 rounded-2xl flex gap-4 items-center text-lg uppercase tracking-widest font-semibold leading-3 hover:scale-110 transition-all hover:bg-gradient-to-tr from-blue-700 to-blue-400">
+    <button className="bg-slate-700 p-4 rounded-2xl flex gap-4 items-center text-lg uppercase tracking-widest font-semibold leading-3 hover:scale-110 transition-all hover:bg-gradient-to-tr from-blue-700 to-blue-400">
       {icon && <span>{icon}</span>}
       <span>{children}</span>
     </button>
@@ -96,6 +89,9 @@ export default function PlanetInfographic() {
   const isVisible = useIsPresent();
   const planet = useMemo(() => getPlanetBySlug(id!), [id]);
 
+  const paperRef = usePaperRefData(planet?.paperRefLink);
+  console.log(paperRef);
+
   if (!planet) {
     return "lol whoops";
   }
@@ -104,105 +100,119 @@ export default function PlanetInfographic() {
   return (
     <>
       <dom.In>
-        <motion.div
+        <div
           key={`planet-detail-${planet.slug}`}
           className="fixed top-0 left-0 text-white h-screen w-full flex justify-end items-start overflow-y-auto"
           style={{ pointerEvents: isVisible ? "all" : "none" }}
         >
-          <motion2d.div
-            className="w-[60vw] py-16 pr-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isVisible ? 1 : 0 }}
-            transition={{ duration: 1, delay: isVisible ? 2.5 : 0 }}
-            style={{ pointerEvents: isVisible ? "all" : "none" }}
+          <div
+            className={clsx(
+              "transition-all duration-1000",
+              !isVisible && "opacity-0",
+            )}
           >
-            <InfographicCard label="Planet">
-              <h1 className="text-7xl font-bold">{planet.name}</h1>
-              <Link to={`/systems/${planet.hostSystem.slug}`}>
-                <h3 className="flex gap-3 text-blue-400 items-center mb-4">
-                  <OrbitIcon /> {planet.hostSystem.name}
-                </h3>
-              </Link>
-              <Link to={`/planets/${id}`}>
-                <ActionButton icon={<TelescopeIcon />}>
-                  Enter the Exosky!
-                </ActionButton>
-              </Link>
-            </InfographicCard>
-            <InfographicCard label="Discovery">
-              {isEarth ? (
-                "We've been here for a while..."
-              ) : (
-                <div className="mb-4">
-                  This exoplanet was discovered
-                  {planet.discoveryYear && <> in {planet.discoveryYear}</>}
-                  {planet.discoveryFacility && (
-                    <> by {planet.discoveryFacility}</>
-                  )}
-                  {planet.discoveryMethod && (
-                    <> using the {planet.discoveryMethod} method</>
-                  )}
-                  .
-                </div>
-              )}
-              {!isEarth && (
-                <a href={""} target="_blank" rel="noreferrer">
-                  <ActionButton icon={<NotebookTextIcon />}>
-                    Read The Paper
+            <motion2d.div
+              className="w-[60vw] py-16 pr-16"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isVisible ? 1 : 0 }}
+              transition={{ duration: 1, delay: isVisible ? 2.5 : 0 }}
+              style={{ pointerEvents: isVisible ? "all" : "none" }}
+            >
+              <InfographicCard label="Planet">
+                <h1 className="text-7xl font-bold">{planet.name}</h1>
+                <Link to={`/systems/${planet.hostSystem.slug}`}>
+                  <h3 className="flex gap-3 text-blue-400 items-center mb-4">
+                    <OrbitIcon /> {planet.hostSystem.name}
+                  </h3>
+                </Link>
+                <Link to={`/planets/${id}`}>
+                  <ActionButton icon={<TelescopeIcon />}>
+                    Enter the Exosky!
                   </ActionButton>
-                </a>
-              )}
-            </InfographicCard>
-            <InfographicCard label="Metrics">
-              <div className="flex gap-6 flex-wrap">
-                <div className="flex gap-6">
-                  {planet.radiusRelEarth !== undefined && (
-                    <InfographicFigure
-                      label="Radius"
-                      icon={<DraftingCompassIcon />}
-                      subtext="× Earth's"
-                    >
-                      {formatter.format(planet.radiusRelEarth)}
-                    </InfographicFigure>
-                  )}
-                  {planet.massRelEarth !== undefined && (
-                    <InfographicFigure
-                      label="Mass"
-                      icon={<ScaleIcon />}
-                      subtext="× Earth's"
-                    >
-                      {formatter.format(planet.massRelEarth)}
-                    </InfographicFigure>
-                  )}
+                </Link>
+              </InfographicCard>
+              <InfographicCard label="Discovery">
+                {isEarth ? (
+                  "We've known about this one for a while..."
+                ) : (
+                  <div className="mb-4">
+                    This exoplanet was discovered
+                    {planet.discoveryYear && <> in {planet.discoveryYear}</>}
+                    {planet.discoveryFacility && (
+                      <> by {planet.discoveryFacility}</>
+                    )}
+                    {planet.discoveryMethod && (
+                      <> using the {planet.discoveryMethod} method</>
+                    )}
+                    .
+                  </div>
+                )}
+                {!isEarth && paperRef.href && (
+                  <div>
+                    <a href={paperRef.href} target="_blank" rel="noreferrer">
+                      <ActionButton icon={<NotebookTextIcon />}>
+                        Read The Paper
+                      </ActionButton>
+                    </a>
+                    {paperRef.citation && (
+                      <div className="text-xl text-slate-600 mt-2">
+                        {paperRef.citation}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </InfographicCard>
+              <InfographicCard label="Metrics">
+                <div className="flex gap-6 flex-wrap">
+                  <div className="flex gap-6">
+                    {planet.radiusRelEarth !== undefined && (
+                      <InfographicFigure
+                        label="Radius"
+                        icon={<DraftingCompassIcon />}
+                        subtext="× Earth's"
+                      >
+                        {formatter.format(planet.radiusRelEarth)}
+                      </InfographicFigure>
+                    )}
+                    {planet.massRelEarth !== undefined && (
+                      <InfographicFigure
+                        label="Mass"
+                        icon={<ScaleIcon />}
+                        subtext="× Earth's"
+                      >
+                        {formatter.format(planet.massRelEarth)}
+                      </InfographicFigure>
+                    )}
+                  </div>
+                  <div className="flex gap-6">
+                    {planet.distance !== undefined && (
+                      <InfographicFigure
+                        label="Distance"
+                        icon={<RouteIcon />}
+                        subtext="parsecs"
+                      >
+                        {formatter.format(planet.distance)}
+                      </InfographicFigure>
+                    )}
+                    {planet.orbitalPeriod !== undefined && (
+                      <InfographicFigure
+                        label="Orbital Period"
+                        icon={<OrbitIcon />}
+                        subtext="Earth days"
+                      >
+                        {formatter.format(planet.orbitalPeriod)}
+                      </InfographicFigure>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-6">
-                  {planet.distance !== undefined && (
-                    <InfographicFigure
-                      label="Distance"
-                      icon={<RouteIcon />}
-                      subtext="parsecs"
-                    >
-                      {formatter.format(planet.distance)}
-                    </InfographicFigure>
-                  )}
-                  {planet.orbitalPeriod !== undefined && (
-                    <InfographicFigure
-                      label="Orbital Period"
-                      icon={<OrbitIcon />}
-                      subtext="Earth days"
-                    >
-                      {formatter.format(planet.orbitalPeriod)}
-                    </InfographicFigure>
-                  )}
-                </div>
-              </div>
-            </InfographicCard>
-          </motion2d.div>
+              </InfographicCard>
+            </motion2d.div>
 
-          <div className="fixed bottom-2 left-2 text-white bg-white/20 px-2 py-1 rounded-lg opacity-30 hover:opacity-70 transition-all">
-            *Placeholder Visualization
+            <div className="fixed bottom-2 left-2 text-white bg-white/20 px-2 py-1 rounded-lg opacity-30 hover:opacity-70 transition-all">
+              *Provisional Planet Model
+            </div>
           </div>
-        </motion.div>
+        </div>
       </dom.In>
       <motion.group
         position={[-2.75, -1, 2.5]}
