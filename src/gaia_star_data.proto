@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message Star {
+    int64 source_id = 1;
+    float x = 2;
+    float y = 3;
+    float z = 4;
+    float phot_g_mean_mag = 5;
+    float absolute_magnitude = 6;
+    float hue = 7;
+}
+
+message StarCollection {
+    repeated Star stars = 1;
+}
