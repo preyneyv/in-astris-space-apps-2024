@@ -1,4 +1,4 @@
-import { Grid, OrbitControls, Stats } from "@react-three/drei";
+import { Grid, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import clsx from "clsx";
 import { AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ import { dom } from "./dom-tunnel";
 import "./index.css";
 import PlanetInfographic from "./planet-detail/infographic";
 import Planetarium from "./planet-detail/planetarium";
+import SystemInfographic from "./system-detail/infographic";
 
 function CameraDebugger() {
   const { camera } = useThree();
@@ -79,13 +80,18 @@ function Root() {
   const location = useLocation();
   return (
     <div id="container">
-      <Canvas scene={{ background: BLACK }} style={{ touchAction: "none" }}>
+      <Canvas
+        scene={{ background: BLACK }}
+        style={{ touchAction: "none" }}
+        camera={{ far: 10000 }}
+      >
         <AnimatePresence>
           <Routes location={location} key={location.pathname}>
             <Route
               index
               element={<Navigate to="/planets/kepler-276-c/info" />}
             />
+            <Route path="/systems/:id" element={<SystemInfographic />} />
             <Route
               path="/planets/:id"
               element={<Planetarium key="planetarium" />}
@@ -93,7 +99,7 @@ function Root() {
             <Route path="/planets/:id/info" element={<PlanetInfographic />} />
           </Routes>
         </AnimatePresence>
-        <Stats />
+        {/* <Stats /> */}
         <CameraDebugger />
       </Canvas>
       <dom.Out />
@@ -104,7 +110,7 @@ function Root() {
 function PrefetchGuard({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    prefetchData().then(() => setReady(true));
+    prefetchData().then((v) => v && setReady(true));
   }, []);
   return (
     <>

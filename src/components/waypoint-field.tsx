@@ -1,10 +1,19 @@
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { motion } from "framer-motion-3d";
-import { useMemo, useRef } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
+import { dom } from "../dom-tunnel";
+
+import { motion as motion2d, useMotionValue, useSpring } from "framer-motion";
+import { EclipseIcon, OrbitIcon, SparkleIcon } from "lucide-react";
+import { useNavigate } from "react-router";
 import "../data";
-import { getLocalizedWaypoints, WaypointPlanet } from "../data";
+import {
+  getLocalizedWaypoints,
+  WaypointHostSystem,
+  WaypointPlanet,
+} from "../data";
 
 function raDecToCart(ra: number, dec: number, d: number) {
   const cos_ra = Math.cos(ra);
@@ -84,78 +93,182 @@ export function RandomWaypointField({ n, d }: { n: number; d: number }) {
   );
 }
 
-function cartToSphereCart(
-  x: number,
-  y: number,
-  z: number,
-  d: number,
-): [number, number, number] {
-  const mag = Math.hypot(x, y, z);
-  const fac = d / mag;
-  return [x * fac, y * fac, z * fac];
-}
-export default function WaypointField({
-  planet,
-  r,
-}: {
-  planet: WaypointPlanet;
-  r: number;
-}) {
+// function cartToSphereCart(
+//   x: number,
+//   y: number,
+//   z: number,
+//   d: number,
+// ): [number, number, number] {
+//   const mag = Math.hypot(x, y, z);
+//   const fac = d / mag;
+//   return [x * fac, y * fac, z * fac];
+// }
+
+const DEFAULT_COLOR = [0.1, 0.1, 0.1];
+const HOVER_COLOR = [0.1, 0.9, 0.9];
+export default function WaypointField({ planet }: { planet: WaypointPlanet }) {
+  const navigate = useNavigate();
+  const lastHovered = useRef(-1);
   const localizedWaypoints = useMemo(
     () => getLocalizedWaypoints(planet),
     [planet],
   );
-  const { coordinates, count } = useMemo(() => {
+  const root = useThree((s) => s.gl.domElement);
+  useFrame(({ raycaster, camera }) => {
+    raycaster.params.Points.threshold = 0.1 / camera.zoom;
+  });
+  const { coordinates, count, colors, meta } = useMemo(() => {
+    // THIS MUTATES LOCALIZEDWAYPOINTS!!!!
+    // DO NOT BE ALARMED!!!!
     const { coordinates, meta } = localizedWaypoints;
     const count = meta.length;
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      const [x, y, z] = cartToSphereCart(
-        coordinates[i3],
-        coordinates[i3 + 1],
-        coordinates[i3 + 2],
-        r,
-      );
-      coordinates[i3] = x;
-      coordinates[i3 + 1] = y;
-      coordinates[i3 + 2] = z;
-    }
-    return { meta, coordinates, count };
-  }, [localizedWaypoints, r]);
-  return (
-    <points
-    // ref={pointsRef}
-    // onPointerMove={(e) => {
-    //   if (!e.index) return;
+    const colors = new Float32Array(count * 3);
+    colors.fill(0.1);
+    return { meta, coordinates, count, colors };
+  }, [localizedWaypoints]);
 
-    //   pointsRef.current!.geometry.attributes.color.array[e.index! * 3] = 0;
-    //   pointsRef.current!.geometry.attributes.color.needsUpdate = true;
-    // }}
-    >
-      <bufferGeometry>
-        {/* <bufferAttribute
-          attach="attributes-color"
-          count={n}
-          itemSize={3}
-          array={colors}
-        /> */}
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          itemSize={3}
-          array={coordinates}
+  const [isHovering, setIsHovering] = useState(-1);
+
+  const updateWaypointState = (p: THREE.Points, idx: number | null) => {
+    setIsHovering(idx ?? -1);
+    const colorAttr = p.geometry.attributes.color;
+    if (lastHovered.current !== -1) {
+      const lastI = lastHovered.current;
+      colorAttr.array.set(DEFAULT_COLOR, lastI * 3);
+      colorAttr.needsUpdate = true;
+      lastHovered.current = -1;
+      root.style.cursor = "";
+    }
+    if (idx === null) return;
+    colorAttr.array.set(HOVER_COLOR, idx * 3);
+    colorAttr.needsUpdate = true;
+    lastHovered.current = idx;
+    root.style.cursor = "pointer";
+  };
+
+  useEffect(() => {
+    function onClick() {
+      if (lastHovered.current === -1) return;
+      const clicked = meta[lastHovered.current];
+      navigate(`/systems/${clicked.slug}`);
+    }
+    root.addEventListener("click", onClick);
+    return () => root.removeEventListener("click", onClick);
+  }, [root, meta, navigate]);
+
+  return (
+    <>
+      <points
+        onPointerLeave={(e) =>
+          updateWaypointState(e.eventObject as THREE.Points, null)
+        }
+        onPointerMove={(e) =>
+          updateWaypointState(e.eventObject as THREE.Points, e.index ?? null)
+        }
+      >
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-color"
+            count={count}
+            itemSize={3}
+            array={colors}
+          />
+          <bufferAttribute
+            attach="attributes-position"
+            count={count}
+            itemSize={3}
+            array={coordinates}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          transparent
+          depthTest={false}
+          depthWrite={false}
+          map={STAR_TEX}
+          blending={THREE.AdditiveBlending}
+          vertexColors
+          size={0.1}
+          // size={40}
+          // sizeAttenuation={false}
         />
-      </bufferGeometry>
-      <pointsMaterial
-        size={40}
-        color={0xffffff}
-        transparent
-        depthTest={false}
-        map={STAR_TEX}
-        blending={THREE.AdditiveBlending}
-        // vertexColors
-        sizeAttenuation={false}
-      />
-    </points>
+      </points>
+      <dom.In>
+        <HostSystemInfoModal
+          system={isHovering === -1 ? null : meta[isHovering]}
+        />
+      </dom.In>
+    </>
+  );
+}
+
+function HostSystemInfoLine({
+  singular,
+  count,
+  icon,
+}: {
+  singular: string;
+  count?: number;
+  icon: ReactNode;
+}) {
+  if (count === undefined) return null;
+  return (
+    <div className="flex gap-2 mb-1">
+      {icon} {count} {singular}
+      {count === 1 ? "" : "s"}
+    </div>
+  );
+}
+
+function HostSystemInfoModal({
+  system: newSystem,
+}: {
+  system: WaypointHostSystem | null;
+}) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  useEffect(() => {
+    function onPointerMove(e: PointerEvent) {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    }
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    return () => document.removeEventListener("pointermove", onPointerMove);
+  }, [x, y]);
+  const xSpring = useSpring(x, { bounce: 0, stiffness: 1000, damping: 100 });
+  const ySpring = useSpring(y, { bounce: 0, stiffness: 1000, damping: 100 });
+  const [system, setSystem] = useState(newSystem);
+  useEffect(() => {
+    if (newSystem) setSystem(newSystem);
+  }, [newSystem]);
+  return (
+    <motion2d.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: newSystem ? 1 : 0 }}
+      style={{
+        x: xSpring,
+        y: ySpring,
+      }}
+      className="fixed z-50 top-0 left-0 pointer-events-none"
+    >
+      {system && (
+        <div className="bg-neutral-900/80 rounded-2xl px-4 py-3 text-white -translate-y-1/2 translate-x-8">
+          <h1 className="flex gap-2 items-center">
+            <OrbitIcon />
+            {system.name}
+          </h1>
+          <div className="border-b-2 my-2 opacity-10" />
+          <HostSystemInfoLine
+            singular="star"
+            icon={<SparkleIcon />}
+            count={system.numStars}
+          />
+          <HostSystemInfoLine
+            singular="planet"
+            icon={<EclipseIcon />}
+            count={system.numPlanets}
+          />
+        </div>
+      )}
+    </motion2d.div>
   );
 }

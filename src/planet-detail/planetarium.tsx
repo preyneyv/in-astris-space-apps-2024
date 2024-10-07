@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import * as THREE from "three";
 
+import StarField from "../components/star-field";
 import WaypointField from "../components/waypoint-field";
 import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
@@ -163,8 +164,8 @@ export default function Planetarium() {
           azimuth={[-Infinity, Infinity]}
           cursor={false}
         >
-          {/* <StarField n={1000000} d={STAR_PROJ_DIST} /> */}
-          <WaypointField planet={planet} r={WAYPOINTS_PROJ_DIST} />
+          <StarField reference={planet} />
+          <WaypointField planet={planet} />
           <ReferenceGuides />
         </PresentationControls>
       </motion.group>

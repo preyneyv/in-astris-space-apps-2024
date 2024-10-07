@@ -145,7 +145,6 @@ function ActionButton({
 
 export default function PlanetInfographic() {
   const { id } = useParams();
-  // const { data: planet } = usePlanetDetail(id!);
   const isVisible = useIsPresent();
   const planet = useMemo(() => getPlanetBySlug(id!), [id]);
 
@@ -168,11 +167,13 @@ export default function PlanetInfographic() {
             transition={{ duration: 1, delay: isVisible ? 2.5 : 0 }}
             style={{ pointerEvents: isVisible ? "all" : "none" }}
           >
-            <InfographicCard label="Name">
+            <InfographicCard label="Planet">
               <h1 className="text-7xl font-bold">{planet.name}</h1>
-              <h3 className="flex gap-3 text-blue-400 items-center mb-4">
-                <OrbitIcon /> {planet.hostSystem.name}
-              </h3>
+              <Link to={`/systems/${planet.hostSystem.slug}`}>
+                <h3 className="flex gap-3 text-blue-400 items-center mb-4">
+                  <OrbitIcon /> {planet.hostSystem.name}
+                </h3>
+              </Link>
               <Link to={`/planets/${id}`}>
                 <ActionButton icon={<TelescopeIcon />}>
                   Enter the Exosky!
@@ -300,7 +301,7 @@ export default function PlanetInfographic() {
               }}
             />
           </motion.mesh>
-          <StarField n={5000} d={10} />
+          <StarField reference={planet} />
         </motion.group>
       </motion.group>
       <motion.ambientLight intensity={0.1} />

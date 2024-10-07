@@ -32,9 +32,6 @@ export type WaypointHostSystem = CartesianCoords & {
   planets: WaypointPlanet[];
 };
 
-const hostSystems: Record<string, WaypointHostSystem> = {};
-const exoplanets: Record<string, WaypointPlanet> = {};
-
 function tryNumber(src?: string): number | undefined {
   const cleaned = src?.trim();
   if (!cleaned || !cleaned.length) return undefined;
@@ -49,7 +46,32 @@ function tryString(src?: string): string | undefined {
   return cleaned;
 }
 
+const hostSystems: Record<string, WaypointHostSystem> = {};
+const exoplanets: Record<string, WaypointPlanet> = {};
+
 function prefetchWaypoints() {
+  const solarSystem: WaypointHostSystem = {
+    name: "Solar System",
+    slug: "solar-system",
+    x: 0,
+    y: 0,
+    z: 0,
+    planets: [],
+    distance: 0,
+    numPlanets: 8,
+    numStars: 1,
+  };
+  const earth: WaypointPlanet = {
+    name: "Earth",
+    slug: "earth",
+    x: 0,
+    y: 0,
+    z: 0,
+    hostSystem: solarSystem,
+  };
+  solarSystem.planets.push(earth);
+  hostSystems[solarSystem.slug] = solarSystem;
+  exoplanets[earth.slug] = earth;
   return new Promise<void>((res, rej) =>
     Papa.parse<{
       id: string;
@@ -104,6 +126,8 @@ function prefetchWaypoints() {
               y,
               z,
               distance: tryNumber(row.sy_dist),
+              numStars: tryNumber(row.sy_snum),
+              numPlanets: tryNumber(row.sy_pnum),
               gaiaMag: tryNumber(row.sy_gaiamag),
               spectralType: tryString(row.st_spectype),
               planets: [],
@@ -140,13 +164,74 @@ function prefetchWaypoints() {
   );
 }
 
+class DynamicFloat32Array {
+  arr: Float32Array;
+  size = 0;
+  constructor(private cap: number = 2) {
+    this.arr = new Float32Array(cap);
+  }
+
+  push(...els: number[]) {
+    for (const el of els) {
+      if (this.size === this.cap) {
+        this.cap *= 2;
+        const newArr = new Float32Array(this.cap);
+        newArr.set(this.arr);
+        this.arr = newArr;
+      }
+      this.arr[this.size++] = el;
+    }
+  }
+}
+
+const starCoordinates = new DynamicFloat32Array();
+const starColorMeta = new DynamicFloat32Array();
+
+function prefetchStars() {
+  return new Promise<void>((res, rej) => {
+    Papa.parse<{
+      source_id: string;
+      x: string;
+      y: string;
+      z: string;
+      ra: string;
+      dec: string;
+      distance_parsecs: string;
+      absolute_magnitude: string;
+      wavelength: string;
+      phot_g_mean_mag: string;
+    }>(window.location.origin + "/stars.csv", {
+      download: true,
+      header: true,
+      error(e) {
+        if (e) rej(e);
+      },
+      step(row) {
+        const data = row.data;
+        if (!data.source_id?.length) return;
+        starCoordinates.push(+data.x, +data.y, +data.z);
+        // starCoordinates.push(+data.ra, +data.dec, +data.distance_parsecs);
+        starColorMeta.push(+data.phot_g_mean_mag);
+        // starColorMeta.push(+data.absolute_magnitude, +data.wavelength);
+      },
+      complete() {
+        res();
+      },
+    });
+  });
+}
+
 export async function prefetchData() {
-  if (status !== "ready") return;
+  if (status === "loaded") return true;
+  if (status !== "ready") return false;
   status = "loading";
   await prefetchWaypoints();
+  await prefetchStars();
   status = "loaded";
-  console.log(exoplanets);
+  return true;
 }
+
+// Waypoint-related data utilities
 
 export function getPlanetBySlug(slug: string): WaypointPlanet | null {
   return exoplanets[slug] ?? null;
@@ -172,4 +257,25 @@ export function getLocalizedWaypoints(planet: WaypointPlanet) {
   }
 
   return { meta, coordinates };
+}
+
+// Star-related data utilities
+
+export function getLocalizedStars(reference: CartesianCoords) {
+  const count = starCoordinates.size / 3;
+  const coordinates = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const si = i * 3;
+    coordinates[si] = starCoordinates.arr[si] - reference.x;
+    coordinates[si + 1] = starCoordinates.arr[si + 1] - reference.y;
+    coordinates[si + 2] = starCoordinates.arr[si + 2] - reference.z;
+
+    // TODO: move this into starfield
+    colors[si] =
+      colors[si + 1] =
+      colors[si + 2] =
+        1 / starColorMeta.arr[i] ** 1.7;
+  }
+  return [count, coordinates, colors] as const;
 }
