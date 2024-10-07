@@ -15,58 +15,6 @@ import StarField from "../components/star-field";
 import { Link } from "react-router-dom";
 import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
-
-// function usePlanetDetail(id: string) {
-// return usememo(
-//   () => ({
-//     data: {
-//       name: id,
-//       discoveryyear: 2020,
-//       discoverymethod: "radial velocity",
-//       discoveryfacility: "thueringer landessternwarte tautenburg",
-//       link: "https://google.com",
-//       planetradiusrelearth: 21.59, // rel earth
-//       massrelearth: 3932, // rel earth, mass or mass sin i
-//       massprovenance: "mass",
-//       distancefromearth: 12.2341, // pc
-//       orbitalperiod: 4.2889731, // days
-//       orbitaleccentricity: 0, //
-//       orbitalsemimajorradius: 0.0656, // au
-//       hostsystem: {
-//         name: "gliese 12",
-//         numstars: 1,
-//         numplanets: 1,
-//       },
-//     },
-//   }),
-//   [id],
-// );
-// }
-
-// function useHostSystemDetail(id: string) {
-//   return useMemo(
-//     () => ({
-//       data: {
-//         name: id,
-//         discoveredIn: 2020,
-//         stars: [
-//           {
-//             name: "asdf",
-//             // information needed to derive color
-//           },
-//         ],
-//         planets: [
-//           {
-//             name: "wow cool",
-//             orbitalSemiMajorRadius: 0.0656, // au
-//           },
-//         ],
-//       },
-//     }),
-//     [id],
-//   );
-// }
-
 // const infographicsVariants: Variants = {
 //   hidden: {
 //     transform: `translateX(20px)`,
@@ -156,7 +104,7 @@ export default function PlanetInfographic() {
     <>
       <dom.In>
         <motion.div
-          key="planet-detail"
+          key={`planet-detail-${planet.slug}`}
           className="fixed top-0 left-0 text-white h-screen w-full flex justify-end items-start overflow-y-auto"
           style={{ pointerEvents: isVisible ? "all" : "none" }}
         >
@@ -244,7 +192,7 @@ export default function PlanetInfographic() {
             </InfographicCard>
           </motion2d.div>
 
-          <div className="fixed bottom-3 left-3 text-white bg-white/20 px-2 py-1 rounded-lg opacity-30 hover:opacity-70 transition-all">
+          <div className="fixed bottom-2 left-2 text-white bg-white/20 px-2 py-1 rounded-lg opacity-30 hover:opacity-70 transition-all">
             *Placeholder Visualization
           </div>
         </motion.div>

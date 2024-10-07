@@ -1,15 +1,17 @@
 import { Line, PresentationControls } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { animate, useIsPresent } from "framer-motion";
+import { useIsPresent } from "framer-motion";
 import { motion } from "framer-motion-3d";
-import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useMemo, useState } from "react";
+import { useParams } from "react-router";
 import * as THREE from "three";
 
+import { RulerIcon } from "lucide-react";
+import { PlanetBadge } from "../components/earth-distance-badge";
+import { MenuToggleButton } from "../components/menu";
 import StarField from "../components/star-field";
 import WaypointField from "../components/waypoint-field";
 import { getPlanetBySlug } from "../data";
-import { dom } from "../dom-tunnel";
+import { dom, menu } from "../dom-tunnel";
 
 // const GUIDE_DIST = STAR_PROJ_DIST + 1;
 
@@ -103,11 +105,9 @@ import { dom } from "../dom-tunnel";
 // }
 
 export default function Planetarium() {
-  const navigate = useNavigate();
-  const camera = useThree(({ camera }) => camera as THREE.PerspectiveCamera);
+  const [showGrid, setShowGrid] = useState(true);
 
   const isPresent = useIsPresent();
-  // const { width, height } = useThree((state) => state.viewport);
 
   const { id } = useParams();
   const planet = useMemo(() => getPlanetBySlug(id!), [id]);
@@ -115,34 +115,46 @@ export default function Planetarium() {
   return (
     <>
       {isPresent && (
-        <dom.In>
-          <div
-            key="planetarium-btns"
-            className="flex gap-2 [&>button]:bg-white  [&>button]:p-1"
-            style={{ position: "fixed", top: 0, right: 0 }}
-          >
-            <button
-              onClick={() => {
-                animate(camera.zoom, camera.zoom === 1 ? 10 : 1, {
-                  onUpdate(v) {
-                    camera.zoom = v;
-                    camera.updateProjectionMatrix();
-                  },
-                });
-              }}
+        <>
+          <dom.In>
+            {/* <div
+              key="planetarium-btns"
+              className="flex gap-2 [&>button]:bg-white  [&>button]:p-1"
+              style={{ position: "fixed", top: 0, right: 0 }}
             >
-              zoom
-            </button>
+              <button
+                onClick={() => {
+                  animate(camera.zoom, camera.zoom === 1 ? 10 : 1, {
+                    onUpdate(v) {
+                      camera.zoom = v;
+                      camera.updateProjectionMatrix();
+                    },
+                  });
+                }}
+              >
+                zoom
+              </button>
 
-            <button
-              onClick={() => {
-                navigate("./info");
-              }}
-            >
-              Back to Info
-            </button>
-          </div>
-        </dom.In>
+              <button
+                onClick={() => {
+                  navigate("./info");
+                }}
+              >
+                Back to Info
+              </button>
+            </div> */}
+
+            <PlanetBadge planet={planet} />
+          </dom.In>
+          <menu.In>
+            <MenuToggleButton
+              icon={<RulerIcon />}
+              label="Toggle Planetary Grid"
+              isEnabled={showGrid}
+              onActivate={() => setShowGrid((g) => !g)}
+            />
+          </menu.In>
+        </>
       )}
       <motion.group
         position={[0, 0, 5]}
@@ -164,7 +176,7 @@ export default function Planetarium() {
         >
           <StarField reference={planet} />
           <WaypointField planet={planet} />
-          <ReferenceGuides />
+          {showGrid && <ReferenceGuides />}
         </PresentationControls>
       </motion.group>
     </>

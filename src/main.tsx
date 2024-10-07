@@ -9,6 +9,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import * as THREE from "three";
 
+import { Menu } from "./components/menu";
 import { prefetchData } from "./data";
 import { dom } from "./dom-tunnel";
 import "./index.css";
@@ -87,10 +88,7 @@ function Root() {
       >
         <AnimatePresence>
           <Routes location={location} key={location.pathname}>
-            <Route
-              index
-              element={<Navigate to="/planets/kepler-276-c/info" />}
-            />
+            <Route index element={<Navigate to="/planets/earth/info" />} />
             <Route path="/systems/:id" element={<SystemInfographic />} />
             <Route
               path="/planets/:id"
@@ -103,6 +101,7 @@ function Root() {
         <CameraDebugger />
       </Canvas>
       <dom.Out />
+      <Menu />
     </div>
   );
 }

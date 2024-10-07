@@ -1,3 +1,4 @@
+import { FuseWorker } from "@iosio/fuse-worker";
 import Papa from "papaparse";
 import { Star, StarCollection } from "./protobuf/gaia_star_data";
 
@@ -33,6 +34,12 @@ export type WaypointHostSystem = CartesianCoords & {
   planets: WaypointPlanet[];
 };
 
+export type WaypointFuzzyResult = {
+  name: string;
+  slug: string;
+  type: "planet" | "system";
+};
+
 function tryNumber(src?: string): number | undefined {
   const cleaned = src?.trim();
   if (!cleaned || !cleaned.length) return undefined;
@@ -49,6 +56,10 @@ function tryString(src?: string): string | undefined {
 
 const hostSystems: Record<string, WaypointHostSystem> = {};
 const exoplanets: Record<string, WaypointPlanet> = {};
+// let fuse: Fuse<WaypointFuzzyResult>;
+const fuse = FuseWorker({
+  workerURL: window.location.origin + "/fuse-worker.js",
+});
 
 function prefetchWaypoints() {
   const solarSystem: WaypointHostSystem = {
@@ -159,6 +170,27 @@ function prefetchWaypoints() {
           hostSystems[row.hostname_slug].planets.push(planet);
         }
 
+        const searchables = Object.values(exoplanets)
+          .map<WaypointFuzzyResult>((planet) => ({
+            name: planet.name,
+            slug: `/planets/${planet.slug}/info`,
+            type: "planet",
+          }))
+          .concat(
+            Object.values(hostSystems).map((system) => ({
+              name: system.name,
+              slug: `/systems/${system.slug}`,
+              type: "system",
+            })),
+          );
+
+        fuse.set({
+          list: searchables,
+          options: {
+            keys: ["name"],
+          },
+        });
+
         res();
       },
     }),
@@ -252,6 +284,15 @@ export function getLocalizedWaypoints(planet: WaypointPlanet) {
   }
 
   return { meta, coordinates };
+}
+
+export function getFuzzySearchResults(search: string) {
+  return new Promise<WaypointFuzzyResult[]>((res) => {
+    if (!search.trim().length) return res([]);
+    fuse.search(search, (result: WaypointFuzzyResult[]) =>
+      res(result.slice(0, 3)),
+    );
+  });
 }
 
 // Star-related data utilities
