@@ -11,9 +11,7 @@ import WaypointField from "../components/waypoint-field";
 import { getPlanetBySlug } from "../data";
 import { dom } from "../dom-tunnel";
 
-const STAR_PROJ_DIST = 10;
-const WAYPOINTS_PROJ_DIST = 9;
-const GUIDE_DIST = STAR_PROJ_DIST + 1;
+// const GUIDE_DIST = STAR_PROJ_DIST + 1;
 
 // function useTouchRotation(root: HTMLElement) {
 //   const x = useMotionValue(0);
@@ -175,7 +173,7 @@ export default function Planetarium() {
 function ReferenceGuides() {
   const isPresent = useIsPresent();
   const circlePts = useMemo(() => {
-    const circleRadius = GUIDE_DIST;
+    const circleRadius = 10;
     const circleShape = new THREE.Shape().absarc(
       0,
       0,
@@ -218,6 +216,9 @@ function ReferenceGuides() {
     <>
       {guideRotations.map(([x, y, z, highlight], i) => (
         <Line
+          // layers={}
+          depthTest={false}
+          depthWrite={false}
           points={circlePts}
           rotation={[x, y, z]}
           key={i}
