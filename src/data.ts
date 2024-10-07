@@ -320,7 +320,7 @@ export const getLocalizedStars = lruMemoize(
     colors[si] =
       colors[si + 1] =
       colors[si + 2] =
-        1 / starColorMeta.arr[i] ** 1.7;
+        1 / starColorMeta.arr[i] ** 1.2;
   }
   return [count, coordinates, colors] as const;
 });

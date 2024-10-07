@@ -29,7 +29,7 @@ export function MenuButton({
 
 export function MenuToggleButton({
   icon,
-  // label,
+  label,
   isEnabled,
   onActivate,
 }: {
@@ -42,13 +42,16 @@ export function MenuToggleButton({
     <button
       onClick={onActivate}
       className={clsx(
-        " w-12 h-12 flex items-center justify-center rounded-xl hover:bg-gradient-to-tr hover:scale-105 hover:text-white transition-all",
+        "group relative w-12 h-12 flex items-center justify-center rounded-xl hover:bg-gradient-to-tr hover:scale-105 hover:text-white transition-all",
         isEnabled && "bg-blue-700/50 from-blue-700 to-blue-400 text-white ",
         !isEnabled &&
           "text-blue-200/90 hover:border-transparent from-blue-700/30 to-blue-400/30",
       )}
     >
       {icon}
+      <span className="absolute whitespace-nowrap -right-2 translate-x-full opacity-0 group-hover:-right-4 group-hover:opacity-100 transition-all pointer-events-none">
+        {label}
+      </span>
     </button>
   );
 }

@@ -1,10 +1,16 @@
 import { Line, PresentationControls } from "@react-three/drei";
-import { useIsPresent } from "framer-motion";
+import {
+  animate,
+  useIsPresent,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import { motion } from "framer-motion-3d";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import * as THREE from "three";
 
+import { useFrame, useThree } from "@react-three/fiber";
 import { RulerIcon } from "lucide-react";
 import { PlanetBadge } from "../components/earth-distance-badge";
 import { MenuToggleButton } from "../components/menu";
@@ -104,6 +110,50 @@ import { dom, menu } from "../dom-tunnel";
 //   return [x, y];
 // }
 
+function useCameraScrollZoom() {
+  const isPresent = useIsPresent();
+  const z = useMotionValue(1);
+
+  useEffect(() => {
+    function handleScroll(ev: WheelEvent) {
+      ev.preventDefault();
+
+      const isPinch = Math.abs(ev.deltaY) < 50;
+      let zo = z.get();
+      if (isPinch) {
+        const factor = -0.01 * ev.deltaY;
+        zo += factor;
+        // z.set(z.get())
+      } else {
+        const strength = 1;
+        const factor = ev.deltaY < 0 ? strength : -strength;
+        zo += factor;
+      }
+      z.set(Math.min(10, Math.max(1, zo)));
+    }
+    document.addEventListener("wheel", handleScroll, { passive: false });
+    return () => document.removeEventListener("wheel", handleScroll);
+  }, [z]);
+
+  const zSmooth = useSpring(z, { duration: 100, bounce: 0 });
+  useFrame(({ camera }) => {
+    if (!isPresent) return;
+    camera.zoom = zSmooth.get();
+    camera.updateProjectionMatrix();
+  });
+  const camera = useThree((s) => s.camera);
+  useEffect(() => {
+    if (!isPresent) {
+      animate(camera.zoom, 1, {
+        onUpdate(v) {
+          camera.zoom = v;
+          camera.updateProjectionMatrix();
+        },
+      });
+    }
+  }, [isPresent, camera]);
+}
+
 export default function Planetarium() {
   const [showGrid, setShowGrid] = useState(true);
 
@@ -111,6 +161,7 @@ export default function Planetarium() {
 
   const { id } = useParams();
   const planet = useMemo(() => getPlanetBySlug(id!), [id]);
+  useCameraScrollZoom();
   if (!planet) return null;
   return (
     <>
@@ -149,7 +200,7 @@ export default function Planetarium() {
           <menu.In>
             <MenuToggleButton
               icon={<RulerIcon />}
-              label="Toggle Planetary Grid"
+              label="Planetary Grid"
               isEnabled={showGrid}
               onActivate={() => setShowGrid((g) => !g)}
             />
