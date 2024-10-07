@@ -43,7 +43,7 @@ export default function SystemInfographic() {
     <>
       <dom.In>
         <div
-          key="system-detail"
+          key={`system-detail-${system.slug}`}
           className="fixed top-0 left-0 text-white h-screen w-screen flex justify-center items-start overflow-y-auto"
         >
           <div className="py-16 w-full max-w-3xl">
